@@ -1,0 +1,192 @@
+# SP-Lab: red de proveedor IP/MPLS con L3VPN y EVPN
+# Despliegue: sudo containerlab deploy -t sp-lab.clab.yml
+name: sp-lab
+
+mgmt:
+  network: sp-lab-mgmt
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    linux:
+      image: quay.io/frrouting/frr:10.2.1
+
+  nodes:
+    p1:
+      kind: linux
+      group: core
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/p1/frr.conf:/etc/frr/frr.conf
+        - configs/p1/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    p2:
+      kind: linux
+      group: core
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/p2/frr.conf:/etc/frr/frr.conf
+        - configs/p2/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    pe1:
+      kind: linux
+      group: pe
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/pe1/frr.conf:/etc/frr/frr.conf
+        - configs/pe1/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    pe2:
+      kind: linux
+      group: pe
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/pe2/frr.conf:/etc/frr/frr.conf
+        - configs/pe2/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    pe3:
+      kind: linux
+      group: pe
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/pe3/frr.conf:/etc/frr/frr.conf
+        - configs/pe3/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    ce-a1:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/ce-a1/frr.conf:/etc/frr/frr.conf
+        - configs/ce-a1/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    ce-a2:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/ce-a2/frr.conf:/etc/frr/frr.conf
+        - configs/ce-a2/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    ce-b1:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/ce-b1/frr.conf:/etc/frr/frr.conf
+        - configs/ce-b1/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    ce-b2:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/ce-b2/frr.conf:/etc/frr/frr.conf
+        - configs/ce-b2/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    sw-a1:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/sw-a1/frr.conf:/etc/frr/frr.conf
+        - configs/sw-a1/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    sw-a2:
+      kind: linux
+      group: customer
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/sw-a2/frr.conf:/etc/frr/frr.conf
+        - configs/sw-a2/setup.sh:/setup.sh
+      exec:
+        - sh /setup.sh
+    h-a10:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - ip addr add 10.10.10.10/24 dev eth1
+        - ip route replace default via 10.10.10.1
+    h-a20:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - ip addr add 10.10.20.10/24 dev eth1
+        - ip route replace default via 10.10.20.1
+    h-a30:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - ip addr add 10.10.30.10/24 dev eth1
+        - ip route replace default via 10.10.30.1
+    h-b1:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - sysctl -w net.ipv6.conf.all.disable_ipv6=0
+        - ip addr add 192.168.50.10/24 dev eth1
+        - ip route replace default via 192.168.50.1
+        - ip -6 addr add 2001:db8:b1::10/64 dev eth1
+        - ip -6 route replace default via 2001:db8:b1::1
+    h-b2:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - sysctl -w net.ipv6.conf.all.disable_ipv6=0
+        - ip addr add 198.51.100.130/25 dev eth1
+        - ip route replace default via 198.51.100.129
+        - ip -6 addr add 2001:db8:b2::10/64 dev eth1
+        - ip -6 route replace default via 2001:db8:b2::1
+    h-c1:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - ip addr add 10.30.0.1/24 dev eth1
+    h-c2:
+      kind: linux
+      group: host
+      image: ghcr.io/hellt/network-multitool
+      exec:
+        - ip addr add 10.30.0.2/24 dev eth1
+
+  links:
+    # Nucleo (P/PE)
+    - endpoints: ["p1:eth1", "p2:eth1"]
+    - endpoints: ["pe1:eth1", "p1:eth2"]
+    - endpoints: ["pe1:eth2", "p2:eth2"]
+    - endpoints: ["pe2:eth1", "p1:eth3"]
+    - endpoints: ["pe2:eth2", "p2:eth3"]
+    - endpoints: ["pe3:eth1", "p1:eth4"]
+    - endpoints: ["pe3:eth2", "p2:eth4"]
+    # Acceso de clientes (PE-CE)
+    - endpoints: ["pe1:eth3", "ce-a1:eth1"]
+    - endpoints: ["pe1:eth4", "ce-b1:eth1"]
+    - endpoints: ["pe2:eth3", "ce-b2:eth1"]
+    - endpoints: ["pe2:eth4", "h-c1:eth1"]
+    - endpoints: ["pe3:eth3", "ce-a2:eth1"]
+    - endpoints: ["pe3:eth4", "h-c2:eth1"]
+    # LAN de clientes
+    - endpoints: ["ce-a1:eth2", "sw-a1:eth1"]
+    - endpoints: ["sw-a1:eth2", "h-a10:eth1"]
+    - endpoints: ["sw-a1:eth3", "sw-a2:eth1"]
+    - endpoints: ["sw-a1:eth4", "sw-a2:eth2"]
+    - endpoints: ["sw-a2:eth3", "h-a20:eth1"]
+    - endpoints: ["ce-a2:eth2", "h-a30:eth1"]
+    - endpoints: ["ce-b1:eth2", "h-b1:eth1"]
+    - endpoints: ["ce-b2:eth2", "h-b2:eth1"]

@@ -1,0 +1,7 @@
+clab-sp-lab/
+.sp-lab.clab.yml.bak
+__pycache__/
+.pytest_cache/
+*.pyc
+backups/*/
+!backups/.gitkeep
